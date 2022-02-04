@@ -1,0 +1,28 @@
+- name: install tomcat server
+  hosts: web
+  become: true
+  vars:
+   tomcat_version: 9.0.58
+   java_version: openjdk-8-jdk
+  tasks:
+  - name: update linux repo
+    apt:
+     name: '*'
+     state: latest
+  - name: Install OpenJDK test
+    apt:
+     name: "{{java_version}}"
+     state: present
+  - name: download tomcat server packages
+    get_url:
+       url: https://dlcdn.apache.org/tomcat/tomcat-{{tomcat_version.split('.')[0]}}/v{{tomcat_version}}/bin/apache-tomcat-{{tomcat_version}}.tar.gz
+       dest: /usr/local
+  - name: extract tomcat packages
+    unarchive:
+       src: /usr/local/apache-tomcat-{{tomcat_version}}.tar.gz
+       dest: /usr/local
+       remote_src: yes
+  - name: rename untarred files
+    command: mv /usr/local/apache-tomcat-{{tomcat_version}} /usr/local/latest
+  - name: start tomcat services
+    shell: nohup /usr/local/latest/bin/startup.sh
