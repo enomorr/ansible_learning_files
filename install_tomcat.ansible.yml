@@ -1,0 +1,36 @@
+---
+ - hosts: all
+   become: yes
+   vars:
+      tomcat_version: 9.0.64
+      tomcat_url: https://dlcdn.apache.org/tomcat/tomcat-{{tomcat_version.split(".")[0]}}/v{{tomcat_version}}/bin/apache-tomcat-{{tomcat_version}}.tar.gz
+
+   tasks:
+     - name: Installing javas 11
+       apt:
+        name: default-jdk
+        state: present
+
+#      name: install jave 8
+#       apt:
+#       name: openjdk-8-jdk
+#       state: present 
+     - name: correct java version selected
+       alternatives:
+        name: java 
+        path: /usr/lib/jvm/java-8-openjdk-amd64/jre/bin/java
+ 
+     - name: get tomcat url
+       debug:
+         var: "tomcat_url"
+
+     - name: downloading tomcat to target nodes
+       get_url:
+          url: "{{tomcat_url}}"
+          dest: /usr/local
+
+     - name: Extract the archive file on the remote node
+       unarchive:
+         src: /usr/local/apache-tomcat-{{tomcat_version}}.tar.gz
+         dest: /var/lib
+         remote_src: yes
